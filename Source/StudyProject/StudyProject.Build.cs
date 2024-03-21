@@ -11,8 +11,9 @@ public class StudyProject : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] {
 			"Core", "CoreUObject", "Engine", "InputCore",
 			
-			"Json", "JsonUtilities"
-		});
+			"Json", "JsonUtilities",
+            "EnhancedInput"
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 	}

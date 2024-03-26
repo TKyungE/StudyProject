@@ -13,6 +13,8 @@
 #include "Inputs/SInputConfigData.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Animations/SAnimInstance.h"
+#include "Engine/EngineTypes.h"
+#include "Engine/DamageEvents.h"
 
 ASRPGCharacter::ASRPGCharacter()
 	: bIsAttacking(false)
@@ -24,7 +26,7 @@ ASRPGCharacter::ASRPGCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
-	
+
 	SpringArmComponent->bUsePawnControlRotation = true;
 	SpringArmComponent->bDoCollisionTest = true;
 	SpringArmComponent->bInheritPitch = false;
@@ -34,6 +36,8 @@ ASRPGCharacter::ASRPGCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 480.f, 0.f);
+
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("SCharacter"));
 }
 
 void ASRPGCharacter::BeginPlay()
@@ -63,6 +67,25 @@ void ASRPGCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupe
 {
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	bIsAttacking = false;
+}
+
+float ASRPGCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float FinalDamageAmount = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	CurrentHP = FMath::Clamp(CurrentHP - FinalDamageAmount, 0.f, MaxHP);
+
+	if (CurrentHP < KINDA_SMALL_NUMBER)
+	{
+		bIsDead = true;
+		CurrentHP = 0.f;
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	}
+
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("%s [%.1f/ %1.f]"), *GetName(), CurrentHP,MaxHP));
+
+	return FinalDamageAmount;
 }
 
 void ASRPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -138,7 +161,53 @@ void ASRPGCharacter::BeginCombo()
 
 void ASRPGCharacter::CheckHit()
 {
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("CheckHit() has been called.")));
+	FHitResult HitResult;
+	FCollisionQueryParams Params(NAME_None, false, this);
+
+	FVector TraceVec1 = GetActorForwardVector() * AttackRange;
+
+	FQuat CapsuleRot1 = FRotationMatrix::MakeFromZ(TraceVec1).ToQuat();
+
+	bool bResult = GetWorld()->SweepSingleByChannel(
+		HitResult,
+		GetActorLocation(),
+		GetActorLocation() + AttackRange,
+		FQuat::Identity,
+		ECC_GameTraceChannel2,
+		FCollisionShape::MakeSphere(AttackRadius),
+		Params
+	);
+
+	if (true == bResult)
+	{
+		if (true == ::IsValid(HitResult.GetActor()))
+		{
+			//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Hit Actor Name: %s"), *HitResult.GetActor()->GetName()));
+			FDamageEvent DamageEvent;
+			HitResult.GetActor()->TakeDamage(50.f, DamageEvent, GetController(), this);
+		}
+	}
+
+#pragma region CollisionDebugDrawing
+	FVector TraceVec = GetActorForwardVector() * AttackRange;
+	FVector Center = GetActorLocation() + TraceVec * 0.5f;
+	float HalfHeight = AttackRange * 0.5f + AttackRadius;
+	FQuat CapsuleRot = FRotationMatrix::MakeFromZ(TraceVec).ToQuat();
+	FColor DrawColor = true == bResult ? FColor::Green : FColor::Red;
+	float DebugLifeTime = 5.f;
+
+	DrawDebugCapsule(
+		GetWorld(),
+		Center,
+		HalfHeight,
+		AttackRadius,
+		CapsuleRot,
+		DrawColor,
+		false,
+		DebugLifeTime
+	);
+#pragma endregion
+
 }
 
 void ASRPGCharacter::CheckCanNextCombo()
@@ -149,7 +218,7 @@ void ASRPGCharacter::CheckCanNextCombo()
 		return;
 	}
 
-	if (true == bIsAttackKeyPressed)	{
+	if (true == bIsAttackKeyPressed) {
 
 		CurrentComboCount = FMath::Clamp(CurrentComboCount + 1, 1, MaxComboCount);
 		FName NextSectionName = *FString::Printf(TEXT("%s%d"), *AttackAnimMontageSectionName, CurrentComboCount);

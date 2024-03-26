@@ -2,7 +2,8 @@
 
 
 #include "Animations/SAnimInstance.h"
-#include "Characters/SRPGCharacter.h"
+//#include "Characters/SRPGCharacter.h"
+#include "Characters/SCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 USAnimInstance::USAnimInstance()
@@ -17,22 +18,26 @@ void USAnimInstance::NativeInitializeAnimation()
 	Velocity = FVector::ZeroVector;
 	bIsFalling = false;
 	bIsCrouching = false;
+	bIsDead = false;
 }
 
 void USAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
-	ASRPGCharacter* OwnerCharacter = Cast<ASRPGCharacter>(TryGetPawnOwner());
+	ASCharacter* OwnerCharacter = Cast<ASCharacter>(TryGetPawnOwner());
 	if (true == ::IsValid(OwnerCharacter))
 	{
 		UCharacterMovementComponent* CharacterMovementComponent = OwnerCharacter->GetCharacterMovement();
 		if (true == ::IsValid(CharacterMovementComponent))
 		{
 			Velocity = CharacterMovementComponent->GetLastUpdateVelocity();
+			UE_LOG(LogTemp, Log, TEXT("%.3f"), CurrentSpeed);
+
 			CurrentSpeed = Velocity.Size();
 			bIsFalling = CharacterMovementComponent->IsFalling();
 			bIsCrouching = CharacterMovementComponent->IsCrouching();
+			bIsDead = OwnerCharacter->IsDead();
 		}
 	}
 }

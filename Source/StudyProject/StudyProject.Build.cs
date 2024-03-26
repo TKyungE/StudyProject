@@ -12,7 +12,11 @@ public class StudyProject : ModuleRules
 			"Core", "CoreUObject", "Engine", "InputCore",
 			
 			"Json", "JsonUtilities",
-            "EnhancedInput"
+            "EnhancedInput",
+
+            "NavigationSystem",
+			"AIModule",
+            "GameplayTasks",
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

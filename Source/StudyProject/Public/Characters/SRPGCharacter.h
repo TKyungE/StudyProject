@@ -14,6 +14,8 @@ UCLASS()
 class STUDYPROJECT_API ASRPGCharacter : public ASCharacter
 {
 	GENERATED_BODY()
+
+	friend class UAN_CheckHit;
 	
 public:
 	ASRPGCharacter();
@@ -25,6 +27,8 @@ public:
 
 	UFUNCTION()
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterruped);
+
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
@@ -68,5 +72,8 @@ private:
 	int32 CurrentComboCount = 0;	
 
 	bool bIsAttackKeyPressed = false;
+
+	float AttackRange = 200.f;
+	float AttackRadius = 50.f;
 
 };

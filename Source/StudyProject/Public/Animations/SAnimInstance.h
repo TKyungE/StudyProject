@@ -36,7 +36,7 @@ private:
 	void AnimNotify_CheckCanNextCombo();
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USAnimInstance")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USAnimInstance", Meta = (AllowPrivateAccess))
 	float CurrentSpeed;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "USAnimInstance")
@@ -48,9 +48,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USAnimInstance")
 	uint8 bIsCrouching: 1;
 	
+private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USAnimInstance", Meta = (AllowPrivateAccess))
 	TObjectPtr<class UAnimMontage> AttackAnimMontage;
 
 	FOnCheckHitDeletage OnCheckHitDelegate;
 	FOnCheckCanNextComboDelegate OnCheckCanNextComboDelegate;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="USAnimInstance", Meta = (AllowPrivateAccess))
+	uint8 bIsDead : 1;
 };

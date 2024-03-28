@@ -16,7 +16,7 @@ class STUDYPROJECT_API ASRPGCharacter : public ASCharacter
 	GENERATED_BODY()
 
 	friend class UAN_CheckHit;
-	
+
 public:
 	ASRPGCharacter();
 
@@ -29,6 +29,11 @@ public:
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterruped);
 
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	float GetMaxEXP() const { return MaxEXP; }
+	float GetCurrentEXP() const { return CurrentEXP; }
+	void SetMaxEXP(float InMaxEXP) { MaxEXP = InMaxEXP; }
+	float SetCurrentEXP(float InCurrentEXP);
 
 protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
@@ -75,5 +80,15 @@ private:
 
 	float AttackRange = 200.f;
 	float AttackRadius = 50.f;
+
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "ASRPGCharacter", Meta = (AllowPrivateAccess))
+	TObjectPtr<class UParticleSystemComponent> ParticleSystemComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ASRPGCharacter", Meta = (AllowPrivateAccess))
+	float MaxEXP = 10;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ASRPGCharacter", Meta = (AllowPrivateAccess))
+	float CurrentEXP = 0;
 
 };

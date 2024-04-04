@@ -23,6 +23,8 @@ public:
 	bool IsNowAttacking() const { return bIsAttacking; }
 
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	virtual void SetWidget(class UStudyUserWidget* InstudyUserWidget) override;
 private:
 	void Attack();
 
@@ -35,4 +37,7 @@ private:
 	float AttackRadius = 50.f;
 
 	bool bIsAttacking = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ASNonPlayerCharacter", Meta = (AllowPrivateAccess))
+	TObjectPtr<class USWidgetComponent> WidgetComponent;
 };

@@ -5,6 +5,7 @@
 //#include "Characters/SRPGCharacter.h"
 #include "Characters/SCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/SStatComponent.h"
 
 USAnimInstance::USAnimInstance()
 {
@@ -19,6 +20,19 @@ void USAnimInstance::NativeInitializeAnimation()
 	bIsFalling = false;
 	bIsCrouching = false;
 	bIsDead = false;
+
+	ASCharacter* OwnerCharacter = Cast<ASCharacter>(TryGetPawnOwner());
+	if (true == ::IsValid(OwnerCharacter))
+	{
+		USStatComponent* StatComponent = OwnerCharacter->GetStatComponent();
+		if (true == ::IsValid(StatComponent))
+		{
+			if (false == StatComponent->OnOutOfCurrentHPDelegate.IsAlreadyBound(this, &ThisClass::OnCharacterDeath))
+			{
+				StatComponent->OnOutOfCurrentHPDelegate.AddDynamic(this, &ThisClass::OnCharacterDeath);
+			}
+		}
+	}
 }
 
 void USAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -32,12 +46,10 @@ void USAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		if (true == ::IsValid(CharacterMovementComponent))
 		{
 			Velocity = CharacterMovementComponent->GetLastUpdateVelocity();
-			UE_LOG(LogTemp, Log, TEXT("%.3f"), CurrentSpeed);
-
 			CurrentSpeed = Velocity.Size();
 			bIsFalling = CharacterMovementComponent->IsFalling();
 			bIsCrouching = CharacterMovementComponent->IsCrouching();
-			bIsDead = OwnerCharacter->IsDead();
+	/*		bIsDead = OwnerCharacter->IsDead();*/
 		}
 	}
 }
@@ -67,4 +79,9 @@ void USAnimInstance::AnimNotify_CheckCanNextCombo()
 	{
 		OnCheckCanNextComboDelegate.Broadcast();
 	}
+}
+
+void USAnimInstance::OnCharacterDeath()
+{
+	bIsDead = true;
 }

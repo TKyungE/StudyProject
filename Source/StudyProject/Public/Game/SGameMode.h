@@ -15,4 +15,6 @@ class STUDYPROJECT_API ASGameMode : public AGameModeBase
 	GENERATED_BODY()
 public:
 	ASGameMode();
+
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 };

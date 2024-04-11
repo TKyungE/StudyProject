@@ -30,10 +30,7 @@ public:
 
 	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-	/*float GetMaxEXP() const { return MaxEXP; }
-	float GetCurrentEXP() const { return CurrentEXP; }
-	void SetMaxEXP(float InMaxEXP) { MaxEXP = InMaxEXP; }
-	float SetCurrentEXP(float InCurrentEXP);*/
+	void Menu(const FInputActionValue& InValue);
 
 protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;

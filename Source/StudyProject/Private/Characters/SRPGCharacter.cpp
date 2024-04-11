@@ -20,6 +20,7 @@
 #include "SPlayerCharacterSettings.h"
 #include "Game/SGameInstance.h"
 #include "Engine/StreamableManager.h"
+#include "Controllers/SPlayerController.h"
 
 ASRPGCharacter::ASRPGCharacter()
 	: bIsAttacking(false)
@@ -80,27 +81,36 @@ void ASRPGCharacter::BeginPlay()
 		AnimInstance->OnCheckCanNextComboDelegate.AddDynamic(this, &ThisClass::CheckCanNextCombo);
 	}
 
-	ASPlayerState* PS = GetPlayerState<ASPlayerState>();
-	if (true == ::IsValid(PS))
-	{
-		if (false == PS->OnCurrentLevelChangedDelegate.IsAlreadyBound(this, &ThisClass::OnCurrentLevelChanged))
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, TimerHandle]() mutable -> void
 		{
-			PS->OnCurrentLevelChangedDelegate.AddDynamic(this, &ThisClass::OnCurrentLevelChanged);
-		}
-	}
+			ASPlayerState* PS = GetPlayerState<ASPlayerState>();
+			if (true == ::IsValid(PS))
+			{
+				if (false == PS->OnCurrentLevelChangedDelegate.IsAlreadyBound(this, &ThisClass::OnCurrentLevelChanged))
+				{
+					PS->OnCurrentLevelChangedDelegate.AddDynamic(this, &ThisClass::OnCurrentLevelChanged);
 
-	const USPlayerCharacterSettings* CDO = GetDefault<USPlayerCharacterSettings>();
-	int32 RandIndex = FMath::RandRange(0, CDO->PlayerCharacterMeshPaths.Num() - 1);
-	CurrentPlayerCharacterMeshPath = CDO->PlayerCharacterMeshPaths[RandIndex];
+					const USPlayerCharacterSettings* CDO = GetDefault<USPlayerCharacterSettings>();
+					int32 SelectedMeshIndex = static_cast<int32>(PS->GetCurrentTeamType()) - 1;
+					CurrentPlayerCharacterMeshPath = CDO->PlayerCharacterMeshPaths[SelectedMeshIndex];
 
-	USGameInstance* SGI = Cast<USGameInstance>(GetGameInstance());
-	if (true == ::IsValid(SGI))
-	{
-		AssetStreamableHandle = SGI->StreamableManager.RequestAsyncLoad(
-			CurrentPlayerCharacterMeshPath,
-			FStreamableDelegate::CreateUObject(this, &ThisClass::OnAssetLoaded)
-		);
-	}
+					if (USGameInstance* SGI = Cast<USGameInstance>(GetGameInstance()))
+					{
+						AssetStreamableHandle = SGI->StreamableManager.RequestAsyncLoad(
+							CurrentPlayerCharacterMeshPath,
+							FStreamableDelegate::CreateUObject(this, &ThisClass::OnAssetLoaded)
+						);
+					}
+
+					TimerHandle.Invalidate();
+				}
+			}
+		}, 0.1f, true);
+
+
+
+
 }
 
 void ASRPGCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterruped)
@@ -128,6 +138,15 @@ float ASRPGCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, 
 	return FinalDamageAmount;
 }
 
+void ASRPGCharacter::Menu(const FInputActionValue& InValue)
+{
+	ASPlayerController* PlayerController = GetController<ASPlayerController>();
+	if (true == ::IsValid(PlayerController))
+	{
+		PlayerController->ToggleMenu();
+	}
+}
+
 //float ASRPGCharacter::SetCurrentEXP(float InCurrentEXP)
 //{
 //	CurrentEXP = FMath::Clamp(CurrentEXP + InCurrentEXP, 0.f, MaxEXP);
@@ -150,6 +169,8 @@ void ASRPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->LookAction, ETriggerEvent::Triggered, this, &ThisClass::Look);
 		EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->JumpAction, ETriggerEvent::Started, this, &ThisClass::Jump);
 		EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->AttackAction, ETriggerEvent::Started, this, &ThisClass::Attack);
+		EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->MenuAction, ETriggerEvent::Started, this, &ThisClass::Menu);
+
 	}
 }
 

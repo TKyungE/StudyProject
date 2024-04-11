@@ -6,10 +6,36 @@
 #include "Game/SPlayerState.h"
 #include "Components/SStatComponent.h"
 #include "Characters/SRPGCharacter.h"
+#include "Blueprint/UserWidget.h"
 
 ASPlayerController::ASPlayerController()
 {
 	PrimaryActorTick.bCanEverTick = true;
+}
+
+void ASPlayerController::ToggleMenu()
+{
+	if (false == bIsMenuOn)
+	{
+		MenuUIInstance->SetVisibility(ESlateVisibility::Visible);
+
+		FInputModeUIOnly Mode;
+		Mode.SetWidgetToFocus(MenuUIInstance->GetCachedWidget());
+		SetInputMode(Mode);
+
+		bShowMouseCursor = true;
+	}
+	else
+	{
+		MenuUIInstance->SetVisibility(ESlateVisibility::Collapsed);
+
+		FInputModeGameOnly InputModeGameOnly;
+		SetInputMode(InputModeGameOnly);
+
+		bShowMouseCursor = false;
+	}
+
+	bIsMenuOn = !bIsMenuOn;
 }
 
 void ASPlayerController::BeginPlay()
@@ -41,6 +67,16 @@ void ASPlayerController::BeginPlay()
 					HUDWidget->BindStatComponent(StatComponent);
 				}
 			}
+		}
+	}
+
+	if (true == ::IsValid(MenuUIClass))
+	{
+		MenuUIInstance = CreateWidget<UUserWidget>(this, MenuUIClass);
+		if (true == ::IsValid(MenuUIInstance))
+		{
+			MenuUIInstance->AddToViewport(3);
+			MenuUIInstance->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
 }

@@ -6,6 +6,15 @@
 #include "GameFramework/SaveGame.h"
 #include "SPlayerStateSave.generated.h"
 
+
+UENUM(BlueprintType)
+enum class ETeamType : uint8
+{
+	None,
+	Red,
+	Blue,
+	End
+};
 /**
  * 
  */
@@ -26,4 +35,7 @@ public:
 
 	UPROPERTY()
 	float CurrentEXP;
+
+	UPROPERTY()
+	ETeamType TeamType = ETeamType::Red;
 };

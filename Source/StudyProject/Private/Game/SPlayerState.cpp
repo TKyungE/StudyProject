@@ -4,7 +4,9 @@
 #include "Game/SPlayerState.h"
 #include "Game/SGameInstance.h"
 #include "Kismet/GameplayStatics.h"
-#include "Game/SPlayerStateSave.h"
+//#include "Game/SPlayerStateSave.h"
+#include "GameFramework/GameModeBase.h"
+
 
 FString ASPlayerState::SaveSlotName(TEXT("PlayerCharacter0"));
 
@@ -25,6 +27,9 @@ void ASPlayerState::InitPlayerState()
 			MaxEXP = SGI->GetCharacterStatDataTableRow(1)->MaxEXP;
 		}
 	}
+	
+
+
 
 	USPlayerStateSave* PlayerStateSave = Cast<USPlayerStateSave>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, 0));
 	if (false == ::IsValid(PlayerStateSave))
@@ -35,6 +40,10 @@ void ASPlayerState::InitPlayerState()
 	SetPlayerName(PlayerStateSave->PlayerCharacterName);
 	SetCurrentLevel(PlayerStateSave->CurrentLevel);
 	SetCurrentEXP(PlayerStateSave->CurrentEXP);
+	SetCurrentTeamType(PlayerStateSave->TeamType);
+
+	SavePlayerState();
+
 }
 
 void ASPlayerState::SetCurrentLevel(int32 InCurrentLevel)

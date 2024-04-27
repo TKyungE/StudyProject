@@ -59,25 +59,6 @@ float ASNonPlayerCharacter::TakeDamage(float Damage, FDamageEvent const& DamageE
 {
     float FinalDamageAmount = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 
- /*   CurrentHP = FMath::Clamp(CurrentHP - FinalDamageAmount, 0.f, MaxHP);
-    if (CurrentHP < KINDA_SMALL_NUMBER)
-    {
-        ASRPGCharacter* DamageCauserCharacter = Cast<ASRPGCharacter>(DamageCauser);
-        if (true == ::IsValid(DamageCauserCharacter))
-        {
-            DamageCauserCharacter->SetCurrentEXP(DamageCauserCharacter->GetCurrentEXP() + 5);
-        }
-        CurrentHP = 0;
-        bIsDead = true;
-        GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-        GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-        ASAIController* AIC = Cast<ASAIController>(GetController());
-        if (true == ::IsValid(AIC))
-        {
-            AIC->EndAI();
-        }
-    }*/
-
     if (StatComponent->GetCurrentHP() < KINDA_SMALL_NUMBER)
     {
         /*ASRPGCharacter* DamageCauserCharacter = Cast<ASRPGCharacter>(DamageCauser);

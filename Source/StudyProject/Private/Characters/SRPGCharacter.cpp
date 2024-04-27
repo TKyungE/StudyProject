@@ -35,7 +35,7 @@ ASRPGCharacter::ASRPGCharacter()
 
 	SpringArmComponent->bUsePawnControlRotation = true;
 	SpringArmComponent->bDoCollisionTest = true;
-	SpringArmComponent->bInheritPitch = false;
+	SpringArmComponent->bInheritPitch = true;
 	SpringArmComponent->bInheritYaw = true;
 	SpringArmComponent->bInheritRoll = false;
 
@@ -104,9 +104,10 @@ void ASRPGCharacter::BeginPlay()
 					}
 
 					TimerHandle.Invalidate();
+					GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 				}
 			}
-		}, 0.1f, true);
+		}, 0.3f, true);
 
 
 
